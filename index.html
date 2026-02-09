@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Liz & Kenneth 💖</title>
+  <style>
+    :root{
+      --pink1:#ffd1dc;
+      --pink2:#ff9fb5;
+      --text:#2a2a2a;
+      --accent:#ff4d6d;
+      --accent2:#ff8fab;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      overflow:hidden;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: radial-gradient(circle at 25% 20%, var(--pink1), var(--pink2));
+      color:var(--text);
+    }
+
+    
+    #scene{
+      position:fixed;
+      inset:0;
+      width:100%;
+      height:100%;
+      display:block;
+    }
+
+    
+    .ui{
+      position:fixed;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:clamp(16px, 3vw, 36px);
+      pointer-events:none;
+      z-index:2;
+    }
+
+    .layout{
+      width:min(1100px, 96vw);
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap:clamp(14px, 3vw, 40px);
+      align-items:center;
+      pointer-events:auto;
+    }
+
+   
+    .left{
+      padding: 6px 2px;
+      text-shadow: 0 10px 30px rgba(0,0,0,.12);
+    }
+
+    h1{
+      margin:0 0 10px;
+      font-size:clamp(30px, 4.2vw, 54px);
+      letter-spacing:.2px;
+    }
+
+    .msg{
+      margin:0 0 16px;
+      max-width:68ch;
+      line-height:1.75;
+      font-size:clamp(15px, 2vw, 18px);
+      opacity:.95;
+    }
+
+    .countdown{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin: 10px 0 16px;
+    }
+    .pill{
+      background:rgba(255,255,255,.75);
+      backdrop-filter: blur(6px);
+      border:1px solid rgba(255,255,255,.7);
+      border-radius:18px;
+      padding:10px 12px;
+      min-width:120px;
+      box-shadow:0 14px 40px rgba(0,0,0,.12);
+    }
+    .pill .num{
+      font-weight:800;
+      font-size:20px;
+      letter-spacing:.3px;
+    }
+    .pill .lab{
+      font-size:12px;
+      opacity:.75;
+      margin-top:2px;
+    }
+
+    button{
+      border:none;
+      border-radius:999px;
+      padding:12px 18px;
+      font-size:16px;
+      cursor:pointer;
+      color:#fff;
+      background:linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow:0 16px 40px rgba(255,77,109,.35);
+      transition: transform .12s ease, filter .12s ease;
+    }
+    button:hover{ transform: translateY(-1px); filter:brightness(1.03); }
+    button:active{ transform: translateY(1px); }
+
+    .hint{
+      margin-top:10px;
+      font-size:12px;
+      opacity:.7;
+    }
+
+  
+    .right{
+      height: 60vh;
+      min-height: 340px;
+      pointer-events:none;
+    }
+
+    /* Modal */
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      place-items:center;
+      background:rgba(0,0,0,.38);
+      padding:18px;
+      z-index:10;
+    }
+    .modal.open{display:grid}
+    .modalBox{
+      width:min(520px, 92vw);
+      background:#fff;
+      border-radius:24px;
+      padding:22px 18px;
+      box-shadow:0 24px 80px rgba(0,0,0,.35);
+      text-align:center;
+    }
+    .modalBox h2{
+      margin:0 0 8px;
+      font-size:clamp(20px, 4vw, 30px);
+    }
+    .modalBox p{
+      margin:0 0 14px;
+      line-height:1.55;
+      opacity:.9;
+    }
+    .close{
+      background:#111;
+      box-shadow:none;
+    }
+
+   
+    @media (max-width: 860px){
+      .layout{ grid-template-columns: 1fr; }
+      .right{ display:none; } 
+      .left{ text-align:center; }
+      .countdown{ justify-content:center; }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="scene"></canvas>
+
+  <div class="ui">
+    <div class="layout">
+      <div class="left">
+        <h1 id="title">Liz, mi amor 💖</h1>
+
+        <p class="msg" id="msg">
+          Quiero que sepas que te elijo hoy, mañana y siempre.
+          Gracias por tu amor, por tu paciencia y por hacer mi vida más bonita.
+          Eres mi lugar favorito y mi futuro. 💞
+          <br><br>
+          Con amor, <b>Kenneth</b>.
+        </p>
+
+        <div class="countdown" aria-label="Cuenta regresiva a mayo 2027">
+          <div class="pill"><div class="num" id="dd">—</div><div class="lab">días</div></div>
+          <div class="pill"><div class="num" id="hh">—</div><div class="lab">horas</div></div>
+          <div class="pill"><div class="num" id="mm">—</div><div class="lab">minutos</div></div>
+          <div class="pill"><div class="num" id="ss">—</div><div class="lab">segundos</div></div>
+        </div>
+
+        <button id="btnFuturo">Futuro</button>
+        <div class="hint">Cuenta regresiva en tiempo real 🍃</div>
+      </div>
+
+      <div class="right"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modalBox">
+      <h2>💍 Nuestro futuro</h2>
+      <p>Recordatorio: <b>pronto nos casaremos</b>. Y yo ya estoy listo para estar “para siempre” contigo. 💖</p>
+      <button class="close" id="btnCerrar">Cerrar</button>
+    </div>
+  </div>
+
+<script>
+
+const NOMBRE_NOVIA = "Liz";
+const TU_NOMBRE = "Kenneth";
+
+
+const TARGET_DATE = new Date(2027, 4, 1, 0, 0, 0);
+
+
+const TEXTO = `
+Quiero que sepas que te elijo hoy, mañana y siempre.
+Gracias por tu amor, por tu paciencia y por hacer mi vida más bonita.
+Eres mi lugar favorito y mi futuro. 💞
+
+Con amor, <b>${TU_NOMBRE}</b>.
+`;
+
+
+document.getElementById("title").textContent = `${NOMBRE_NOVIA}, mi amor 💖`;
+document.getElementById("msg").innerHTML = TEXTO.trim().replaceAll("\n","<br>");
+
+const modal = document.getElementById("modal");
+document.getElementById("btnFuturo").addEventListener("click", ()=> modal.classList.add("open"));
+document.getElementById("btnCerrar").addEventListener("click", ()=> modal.classList.remove("open"));
+modal.addEventListener("click", (e)=>{ if(e.target === modal) modal.classList.remove("open"); });
+
+function pad2(n){ return String(n).padStart(2,"0"); }
+function updateCountdown(){
+  const now = new Date();
+  let diff = TARGET_DATE - now;
+  if(diff < 0) diff = 0;
+
+  const s = Math.floor(diff/1000);
+  const days = Math.floor(s / 86400);
+  const hours = Math.floor((s % 86400) / 3600);
+  const mins = Math.floor((s % 3600) / 60);
+  const secs = s % 60;
+
+  dd.textContent = days;
+  hh.textContent = pad2(hours);
+  mm.textContent = pad2(mins);
+  ss.textContent = pad2(secs);
+}
+setInterval(updateCountdown, 250);
+updateCountdown();
+
+
+const canvas = document.getElementById("scene");
+const ctx = canvas.getContext("2d");
+
+let DPR = 1;
+let W = 0, H = 0;
+let groundY = 0;
+
+const flowers = [];     
+const clouds = [];       
+
+function rand(min,max){ return min + Math.random()*(max-min); }
+
+function rebuildStatic(){
+  flowers.length = 0;
+  clouds.length = 0;
+
+  groundY = H * 0.72;
+
+
+  clouds.push({x: W*0.28, y: H*0.22, rx: W*0.18, ry: H*0.075, a:0.22});
+  clouds.push({x: W*0.72, y: H*0.18, rx: W*0.22, ry: H*0.085, a:0.16});
+
+
+  const flowerCount = Math.max(18, Math.floor(W/34));
+  for(let i=0;i<flowerCount;i++){
+    const x = (i + Math.random()*0.65) * (W/flowerCount);
+    const y = groundY + rand(28, 120);
+    const s = rand(0.65, 1.25);
+    const bend = rand(-8, 8);
+    const petalPick = Math.floor(rand(0, 3));
+    flowers.push({x,y,s,bend,petalPick});
+  }
+}
+
+function resize(){
+  DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  W = window.innerWidth;
+  H = window.innerHeight;
+
+  canvas.width = Math.floor(W * DPR);
+  canvas.height = Math.floor(H * DPR);
+  canvas.style.width = W + "px";
+  canvas.style.height = H + "px";
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+
+  rebuildStatic(); // <- importante: regeneramos SOLO al redimensionar
+}
+window.addEventListener("resize", resize);
+resize();
+
+/* Árbol y corazones */
+const hearts = [];
+const falling = [];
+
+let filled = 0;
+const fillTarget = 120;
+let lastStep = 0;
+let phase = "fill";
+
+function drawFlower(f){
+  ctx.save();
+  ctx.translate(f.x, f.y);
+  ctx.scale(f.s, f.s);
+
+  // tallo
+  ctx.strokeStyle = "rgba(60,140,90,0.5)";
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(0, 0);
+  ctx.quadraticCurveTo(f.bend, 16, f.bend*0.5, 34);
+  ctx.stroke();
+
+  // pétalos (fijos)
+  const petal = [
+    "rgba(255,255,255,0.72)",
+    "rgba(255,180,200,0.72)",
+    "rgba(255,220,230,0.72)"
+  ][f.petalPick];
+
+  ctx.fillStyle = petal;
+  for(let i=0;i<5;i++){
+    ctx.beginPath();
+    ctx.ellipse(Math.cos(i*1.256)*7, Math.sin(i*1.256)*7 - 6, 6, 4, i*0.4, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.fillStyle = "rgba(255,210,90,0.85)";
+  ctx.beginPath();
+  ctx.arc(0, -6, 3.5, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawBackground(){
+  // nubes (fijas)
+  for(const c of clouds){
+    ctx.save();
+    ctx.globalAlpha = c.a;
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    ctx.ellipse(c.x, c.y, c.rx, c.ry, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // suelo
+  ctx.fillStyle = "rgba(255,255,255,0.18)";
+  ctx.beginPath();
+  ctx.ellipse(W*0.5, groundY+40, W*0.58, H*0.18, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle = "rgba(255,255,255,0.12)";
+  ctx.beginPath();
+  ctx.ellipse(W*0.5, groundY+65, W*0.52, H*0.16, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // flores (fijas)
+  for(const f of flowers) drawFlower(f);
+}
+
+function drawTree(){
+  // Árbol a la DERECHA
+  const cx = W * 0.78;
+  const baseY = groundY;
+  const trunkH = H * 0.22;
+
+  // sombra
+  ctx.fillStyle = "rgba(0,0,0,0.08)";
+  ctx.beginPath();
+  ctx.ellipse(cx, baseY+50, W*0.12, H*0.03, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // tronco
+  ctx.strokeStyle = "rgba(90,55,40,0.95)";
+  ctx.lineWidth = Math.max(10, W*0.012);
+  ctx.lineCap = "round";
+  ctx.beginPath();
+  ctx.moveTo(cx, baseY);
+  ctx.lineTo(cx, baseY - trunkH);
+  ctx.stroke();
+
+  // ramas
+  ctx.lineWidth = Math.max(6, W*0.007);
+  ctx.beginPath();
+  ctx.moveTo(cx, baseY - trunkH*0.65);
+  ctx.lineTo(cx - W*0.09, baseY - trunkH*0.95);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx, baseY - trunkH*0.58);
+  ctx.lineTo(cx + W*0.1, baseY - trunkH*0.92);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx, baseY - trunkH*0.82);
+  ctx.lineTo(cx - W*0.04, baseY - trunkH*1.08);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx, baseY - trunkH*0.8);
+  ctx.lineTo(cx + W*0.05, baseY - trunkH*1.1);
+  ctx.stroke();
+
+  return {
+  cx,
+  cy: baseY - trunkH*1.02,
+  rx: W*0.34,   // antes 0.16
+  ry: H*0.28    // antes 0.12
+  };
+}
+
+function heartPath(x,y,s){
+  ctx.beginPath();
+  const top = s*0.3;
+  ctx.moveTo(x, y + top);
+  ctx.bezierCurveTo(x - s, y - s*0.4, x - s*0.7, y - s*1.2, x, y - s*0.6);
+  ctx.bezierCurveTo(x + s*0.7, y - s*1.2, x + s, y - s*0.4, x, y + top);
+  ctx.closePath();
+}
+
+function spawnLeafHeart(canopy){
+  let x, y;
+  for(let tries=0; tries<12; tries++){
+    const px = rand(-1,1);
+    const py = rand(-1,1);
+    if(px*px + py*py <= 1){
+      x = canopy.cx + px * canopy.rx;
+      y = canopy.cy + py * canopy.ry;
+      break;
+    }
+  }
+  const size = rand(10, 22);
+  hearts.push({
+    x, y,
+    size,
+    wob: rand(0, Math.PI*2),
+    alpha: rand(0.65, 0.95),
+    hue: Math.random()<0.5 ? "rgba(255,77,109," : "rgba(255,143,171,"
+  });
+}
+
+let t = 0;
+function drawHearts(){
+  for(const h of hearts){
+    const wobble = Math.sin(t*0.002 + h.wob) * 1.2;
+    ctx.fillStyle = h.hue + h.alpha + ")";
+    heartPath(h.x + wobble, h.y, h.size);
+    ctx.fill();
+  }
+}
+
+function toFalling(){
+  const take = Math.min(3, hearts.length);
+  for(let i=0; i<take; i++){
+    const idx = Math.floor(Math.random()*hearts.length);
+    const h = hearts.splice(idx,1)[0];
+    falling.push({
+      x: h.x,
+      y: h.y,
+      size: h.size,
+      vx: rand(-0.35, 0.35),
+      vy: rand(0.8, 1.6),
+      rot: rand(0, Math.PI*2),
+      vr: rand(-0.06, 0.06),
+      alpha: h.alpha,
+      hue: h.hue
+    });
+  }
+}
+
+function drawFalling(){
+  for(const f of falling){
+    f.vy += 0.005;
+    f.x += f.vx + Math.sin(t*0.003 + f.rot)*0.2;
+    f.y += f.vy;
+    f.rot += f.vr;
+    f.alpha -= 0.0025;
+
+    ctx.save();
+    ctx.translate(f.x, f.y);
+    ctx.rotate(f.rot);
+    ctx.fillStyle = f.hue + Math.max(0, f.alpha) + ")";
+    heartPath(0, 0, f.size);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  for(let i=falling.length-1;i>=0;i--){
+    const f = falling[i];
+    if(f.y > H + 80 || f.alpha <= 0) falling.splice(i,1);
+  }
+}
+
+function seedInitial(canopy){
+  hearts.length = 0;
+  falling.length = 0;
+  for(let i=0;i<18;i++) spawnLeafHeart(canopy);
+  filled = hearts.length;
+  phase = "fill";
+  lastStep = 0;
+}
+
+function tick(ts){
+  t = ts;
+  ctx.clearRect(0,0,W,H);
+
+  drawBackground();
+  const canopy = drawTree();
+
+  // animación: llenar y luego caer
+  if(phase === "fill"){
+    if(ts - lastStep > 60){
+      lastStep = ts;
+      if(filled < fillTarget){
+        spawnLeafHeart(canopy);
+        filled++;
+      }else{
+        phase = "fall";
+      }
+    }
+  }else{
+    if(ts - lastStep > 90){
+      lastStep = ts;
+      toFalling();
+    }
+    if(hearts.length < 30 && Math.random() < 0.25){
+      spawnLeafHeart(canopy);
+    }
+  }
+
+  drawHearts();
+  drawFalling();
+
+  requestAnimationFrame(tick);
+}
+
+// arranque
+seedInitial({cx: W*0.78, cy: groundY - H*0.22*1.05, rx: W*0.16, ry: H*0.12});
+requestAnimationFrame(tick);
+</script>
+</body>
+</html>
